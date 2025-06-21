@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Tumor Classification | AI-Powered Medical Diagnosis</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #00d4ff;
+            --secondary-color: #0066cc;
+            --accent-color: #ff6b6b;
+            --success-color: #4ecdc4;
+            --warning-color: #ffe66d;
+            --error-color: #ff6b6b;
+            
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #1a1a2e;
+            --bg-tertiary: #16213e;
+            --bg-card: rgba(26, 26, 46, 0.8);
+            --bg-glass: rgba(255, 255, 255, 0.05);
+            
+            --text-primary: #ffffff;
+            --text-secondary: #b8b8d1;
+            --text-muted: #8888aa;
+            
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            
+            --gradient-medical: linear-gradient(135deg, #00d4ff 0%, #0066cc 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Arabic font support */
+        [dir="rtl"] {
+            font-family: 'Cairo', sans-serif;
+        }
+
+        /* Background Animation */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.03;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23ffffff" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(1deg); }
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            padding: 0.75rem 0;
+            overflow: hidden;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .logo i {
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            background: var(--gradient-medical);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gradient-medical);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .lang-toggle {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            padding: 0.5rem 0.75rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .lang-toggle:hover {
+            background: var(--primary-color);
+            color: var(--bg-primary);
+        }
+
+        /* Mobile menu button */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .mobile-menu-btn:hover {
+            background: var(--bg-glass);
+        }
+
+        /* Mobile menu */
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 70px;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 15, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 999;
+            padding: 1rem;
+        }
+
+        .mobile-menu.show {
+            display: block;
+        }
+
+        .mobile-menu-links {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .mobile-menu-links .nav-link {
+            padding: 0.75rem;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .mobile-menu-links .nav-link:hover {
+            background: var(--bg-glass);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 70px;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            background: radial-gradient(ellipse at center, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+            padding: 2rem 0;
+        }
+
+        .hero-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .hero-content h1 {
+            font-size: clamp(2rem, 6vw, 3.5rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, #00d4ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-content .subtitle {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-weight: 300;
+            line-height: 1.5;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 0.75rem;
+            background: var(--bg-glass);
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-number {
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            font-weight: 700;
+            color: var(--primary-color);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .cta-button {
+            background: var(--gradient-medical);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+            width: 100%;
+            max-width: 250px;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 212, 255, 0.4);
+        }
+
+        .hero-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .brain-visual {
+            width: clamp(200px, 30vw, 400px);
+            height: clamp(200px, 30vw, 400px);
+            background: var(--gradient-medical);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        .brain-visual::before {
+            content: '';
+            position: absolute;
+            width: 120%;
+            height: 120%;
+            border: 2px solid var(--primary-color);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: rotate 20s linear infinite;
+        }
+
+        .brain-visual i {
+            font-size: clamp(3rem, 8vw, 8rem);
+            color: white;
+            opacity: 0.9;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Analysis Section */
+        .analysis-section {
+            padding: 2rem 0;
+            background: var(--bg-secondary);
+        }
+
+        .section-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: var(--gradient-medical);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .upload-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 15px;
+            padding: 2rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--primary-color);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .upload-icon {
+            font-size: clamp(2rem, 6vw, 3rem);
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-text {
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .upload-hint {
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
+            color: var(--text-muted);
+        }
+
+        .model-selector {
+            margin-bottom: 1.5rem;
+        }
+
+        .model-selector label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+        }
+
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .model-option {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .model-option:hover {
+            border-color: var(--primary-color);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .model-option.selected {
+            border-color: var(--primary-color);
+            background: rgba(0, 212, 255, 0.2);
+        }
+
+        .model-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+        }
+
+        .model-desc {
+            font-size: clamp(0.7rem, 1.8vw, 0.8rem);
+            color: var(--text-muted);
+            line-height: 1.3;
+        }
+
+        .analyze-btn {
+            width: 100%;
+            background: var(--gradient-medical);
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .analyze-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 212, 255, 0.3);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .results-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+        }
+
+        .results-title {
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .result-card {
+            background: var(--bg-glass);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .prediction-result {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .prediction-label {
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            padding: 0.75rem;
+            border-radius: 10px;
+        }
+
+        .prediction-label.glioma {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .prediction-label.meningioma {
+            background: linear-gradient(135deg, #ffa726, #ff9800);
+            color: white;
+        }
+
+        .prediction-label.notumor {
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            color: white;
+        }
+
+        .prediction-label.pituitary {
+            background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+            color: white;
+        }
+
+        .confidence-score {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .model-used {
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            color: var(--text-muted);
+        }
+
+        .probability-bars {
+            margin-top: 1.5rem;
+        }
+
+        .probability-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            gap: 0.5rem;
+        }
+
+        .probability-label {
+            font-weight: 500;
+            min-width: 80px;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+        }
+
+        .probability-bar {
+            flex: 1;
+            height: 6px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .probability-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.6s ease;
+        }
+
+        .probability-value {
+            font-weight: 600;
+            min-width: 40px;
+            text-align: right;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+        }
+
+        /* Sample Images */
+        .samples-section {
+            margin-top: 2rem;
+        }
+
+        .samples-title {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .samples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .sample-item {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .sample-item:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .sample-item.selected {
+            border-color: var(--primary-color);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .sample-image {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 0.25rem;
+        }
+
+        .sample-label {
+            font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+            color: var(--text-secondary);
+        }
+
+        /* Facts Section */
+        .facts-section {
+            background: var(--bg-tertiary);
+            padding: 2rem 0;
+        }
+
+        .facts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Mobile horizontal scroll for facts */
+        @media (max-width: 767px) {
+            .facts-grid {
+                display: flex;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                gap: 1rem;
+                padding-bottom: 1rem;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .fact-card {
+                flex: 0 0 280px;
+                scroll-snap-align: start;
+            }
+        }
+
+        .fact-card {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .fact-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .fact-icon {
+            font-size: clamp(2rem, 5vw, 2.5rem);
+            color: var(--primary-color);
+            margin-bottom: 0.75rem;
+        }
+
+        .fact-title {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .fact-text {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 90px;
+            right: 1rem;
+            left: 1rem;
+            max-width: 400px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            backdrop-filter: blur(10px);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+            font-size: 0.9rem;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--error-color);
+        }
+
+        .toast.warning {
+            border-left: 4px solid var(--warning-color);
+        }
+
+        /* Large screen adjustments */
+        @media (min-width: 768px) {
+            .main-content {
+                margin-top: 80px;
+            }
+
+            .hero {
+                padding: 4rem 0;
+            }
+
+            .analysis-section {
+                padding: 4rem 0;
+            }
+
+            .facts-section {
+                padding: 4rem 0;
+            }
+
+            .analysis-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 4rem;
+            }
+
+            .nav-container {
+                padding: 0 2rem;
+            }
+
+            .section-container {
+                padding: 0 2rem;
+            }
+
+            .hero-container {
+                padding: 0 2rem;
+                gap: 4rem;
+            }
+
+            .toast {
+                right: 2rem;
+                left: auto;
+                margin: 0;
+            }
+
+            .samples-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+
+            .sample-image {
+                height: 100px;
+            }
+        }
+
+        /* Mobile-specific optimizations */
+        @media (max-width: 767px) {
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .hero-container {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 2rem;
+            }
+
+            .hero-visual {
+                order: -1;
+            }
+
+            .model-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .fact-card {
+                padding: 1rem;
+            }
+
+            .upload-area {
+                padding: 1.5rem 0.75rem;
+            }
+
+            .result-card {
+                padding: 1rem;
+            }
+
+            .samples-section {
+                margin-top: 1.5rem;
+            }
+        }
+
+        /* Very small screens */
+        @media (max-width: 480px) {
+            .nav-container {
+                padding: 0 0.75rem;
+            }
+
+            .section-container {
+                padding: 0 0.75rem;
+            }
+
+            .hero-container {
+                padding: 0 0.75rem;
+            }
+
+            .model-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .samples-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* RTL adjustments */
+        @media (min-width: 768px) {
+            .toast {
+                right: 2rem;
+                left: auto;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-brain"></i>
+                <span data-en="NeuroAI Diagnostics" data-ar="تشخيص الذكاء العصبي">NeuroAI Diagnostics</span>
+            </div>
+            <nav class="nav-links">
+                <a href="#home" class="nav-link" data-en="Home" data-ar="الرئيسية">Home</a>
+                <a href="#analyze" class="nav-link" data-en="Analyze" data-ar="تحليل">Analyze</a>
+                <a href="#about" class="nav-link" data-en="About" data-ar="حول">About</a>
+                <a href="#contact" class="nav-link" data-en="Contact" data-ar="تواصل">Contact</a>
+            </nav>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <button class="lang-toggle" onclick="toggleLanguage()">
+                <i class="fas fa-globe"></i>
+                <span id="lang-text">عربي</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="mobile-menu">
+        <div class="mobile-menu-links">
+            <a href="#home" class="nav-link" data-en="Home" data-ar="الرئيسية">Home</a>
+            <a href="#analyze" class="nav-link" data-en="Analyze" data-ar="تحليل">Analyze</a>
+            <a href="#about" class="nav-link" data-en="About" data-ar="حول">About</a>
+            <a href="#contact" class="nav-link" data-en="Contact" data-ar="تواصل">Contact</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <h1 data-en="AI-Powered Brain Tumor Detection" data-ar="كشف أورام الدماغ بالذكاء الاصطناعي">
+                        AI-Powered Brain Tumor Detection
+                    </h1>
+                    <p class="subtitle" data-en="Advanced AI models for accurate brain tumor classification from MRI scans. Detects Glioma, Meningioma, Pituitary tumors, and healthy tissue. Fast, reliable, and clinically validated." data-ar="نماذج ذكاء اصطناعي متطورة لتصنيف أورام الدماغ بدقة عالية من صور الرنين المغناطيسي. يكتشف الأورام الدبقية والسحائية والنخامية والأنسجة السليمة. سريع وموثوق ومعتمد طبياً.">
+                        Advanced AI models for accurate brain tumor classification from MRI scans. Detects Glioma, Meningioma, Pituitary tumors, and healthy tissue. Fast, reliable, and clinically validated.
+                    </p>
+                    
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">99.24%</span>
+                            <span class="stat-label" data-en="Accuracy" data-ar="دقة">Accuracy</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">4</span>
+                            <span class="stat-label" data-en="AI Models" data-ar="نماذج ذكية">AI Models</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">5k+</span>
+                            <span class="stat-label" data-en="Trained Images" data-ar="صور تدريب">Trained Images</span>
+                        </div>
+                    </div>
+                    
+                    <button class="cta-button" onclick="scrollToAnalyze()" data-en="Start Analysis" data-ar="ابدأ التحليل">
+                        <i class="fas fa-microscope"></i> 
+                        <span data-en="Start Analysis" data-ar="ابدأ التحليل">Start Analysis</span>
+                    </button>
+                </div>
+                
+                <div class="hero-visual">
+                    <div class="brain-visual">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analysis Section -->
+        <section id="analyze" class="analysis-section">
+            <div class="section-container">
+                <h2 class="section-title" data-en="Brain Tumor Analysis" data-ar="تحليل أورام الدماغ">Brain Tumor Analysis</h2>
+                <p class="section-subtitle" data-en="Upload an MRI scan or choose from our sample images to get instant AI-powered diagnosis" data-ar="ارفع صورة الرنين المغناطيسي أو اختر من الصور النموذجية للحصول على تشخيص فوري بالذكاء الاصطناعي">
+                    Upload an MRI scan or choose from our sample images to get instant AI-powered diagnosis
+                </p>
+
+                <div class="analysis-grid">
+                    <!-- Upload Section -->
+                    <div class="upload-section">
+                        <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <div class="upload-text" data-en="Drop your MRI scan here" data-ar="اسحب صورة الرنين المغناطيسي هنا">
+                                Drop your MRI scan here
+                            </div>
+                            <div class="upload-hint" data-en="or click to browse files (JPG, PNG, JPEG)" data-ar="أو انقر لتصفح الملفات (JPG, PNG, JPEG)">
+                                or click to browse files (JPG, PNG, JPEG)
+                            </div>
+                        </div>
+                        
+                        <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileSelect(event)">
+                        
+                        <div class="model-selector">
+                            <label data-en="Select AI Model:" data-ar="اختر النموذج الذكي:">Select AI Model:</label>
+                            <div class="model-grid">
+                                <div class="model-option selected" data-model="densenet121">
+                                    <div class="model-name">DenseNet-121</div>
+                                    <div class="model-desc" data-en="High accuracy, efficient" data-ar="دقة عالية، فعّال">High accuracy, efficient</div>
+                                </div>
+                                <div class="model-option" data-model="efficientnet_b3">
+                                    <div class="model-name">EfficientNet-B3</div>
+                                    <div class="model-desc" data-en="Balanced performance" data-ar="أداء متوازن">Balanced performance</div>
+                                </div>
+                                <div class="model-option" data-model="resnet50">
+                                    <div class="model-name">ResNet-50</div>
+                                    <div class="model-desc" data-en="Deep residual network" data-ar="شبكة عميقة متقدمة">Deep residual network</div>
+                                </div>
+                                <div class="model-option" data-model="vgg16">
+                                    <div class="model-name">VGG-16</div>
+                                    <div class="model-desc" data-en="Classical architecture" data-ar="تصميم كلاسيكي">Classical architecture</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="analyze-btn" id="analyzeBtn" onclick="analyzeImage()" disabled>
+                            <i class="fas fa-search-plus"></i>
+                            <span data-en="Analyze Image" data-ar="تحليل الصورة">Analyze Image</span>
+                        </button>
+
+                        <!-- Sample Images -->
+                        <div class="samples-section">
+                            <h3 class="samples-title" data-en="Or try these sample images:" data-ar="أو جرب هذه الصور النموذجية:">Or try these sample images:</h3>
+                            <div class="samples-grid" id="samplesGrid">
+                                <!-- Sample images will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Results Section -->
+                    <div class="results-section">
+                        <h3 class="results-title" data-en="Analysis Results" data-ar="نتائج التحليل">Analysis Results</h3>
+                        
+                        <div class="loading" id="loadingDiv">
+                            <div class="spinner"></div>
+                            <p data-en="Analyzing your image..." data-ar="جاري تحليل الصورة...">Analyzing your image...</p>
+                        </div>
+
+                        <div id="resultsContent" class="hidden">
+                            <div class="result-card">
+                                <div class="prediction-result">
+                                    <div class="prediction-label" id="predictionLabel">
+                                        No Tumor Detected
+                                    </div>
+                                    <div class="confidence-score">
+                                        <span data-en="Confidence:" data-ar="مستوى الثقة:">Confidence:</span> 
+                                        <span id="confidenceValue">--</span>%
+                                    </div>
+                                    <div class="model-used">
+                                        <small data-en="Model used:" data-ar="النموذج المستخدم:">Model used:</small> 
+                                        <span id="modelUsed">--</span>
+                                    </div>
+                                </div>
+
+                                <div class="probability-bars" id="probabilityBars">
+                                    <!-- Probability bars will be generated here -->
+                                </div>
+                            </div>
+
+                            <div class="uploaded-image" id="uploadedImageContainer" style="display: none;">
+                                <h4 data-en="Analyzed Image:" data-ar="الصورة المحللة:">Analyzed Image:</h4>
+                                <img id="uploadedImage" style="width: 100%; border-radius: 10px; margin-top: 1rem;">
+                            </div>
+                        </div>
+
+                        <div id="defaultMessage" class="result-card">
+                            <div style="text-align: center; color: var(--text-muted);">
+                                <i class="fas fa-image" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                                <p data-en="Upload an MRI scan to see analysis results" data-ar="ارفع صورة رنين مغناطيسي لمشاهدة نتائج التحليل">
+                                    Upload an MRI scan to see analysis results
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Facts Section -->
+        <section class="facts-section">
+            <div class="section-container">
+                <h2 class="section-title" data-en="Did You Know?" data-ar="هل تعلم؟">Did You Know?</h2>
+                <div class="facts-grid">
+                    <div class="fact-card">
+                        <div class="fact-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3 class="fact-title" data-en="Brain Tumor Types" data-ar="أنواع أورام الدماغ">Brain Tumor Types</h3>
+                        <p class="fact-text" data-en="There are over 120 different types of brain tumors. Our AI can detect 4 major types: Glioma, Meningioma, Pituitary tumors, and healthy brain tissue." data-ar="يوجد أكثر من 120 نوع مختلف من أورام الدماغ. يستطيع ذكاؤنا الاصطناعي اكتشاف 4 أنواع رئيسية: الورم الدبقي، الورم السحائي، أورام الغدة النخامية، والأنسجة السليمة.">
+                            There are over 120 different types of brain tumors. Our AI can detect 4 major types: Glioma, Meningioma, Pituitary tumors, and healthy brain tissue.
+                        </p>
+                    </div>
+
+                    <div class="fact-card">
+                        <div class="fact-icon">
+                            <i class="fas fa-microscope"></i>
+                        </div>
+                        <h3 class="fact-title" data-en="Early Detection" data-ar="الكشف المبكر">Early Detection</h3>
+                        <p class="fact-text" data-en="Early detection of brain tumors can improve treatment outcomes by up to 90%. MRI scans combined with AI analysis provide rapid and accurate diagnosis." data-ar="الكشف المبكر لأورام الدماغ يحسن نتائج العلاج بنسبة تصل إلى 90%. فحوصات الرنين المغناطيسي مع التحليل الذكي توفر تشخيصاً سريعاً ودقيقاً.">
+                            Early detection of brain tumors can improve treatment outcomes by up to 90%. MRI scans combined with AI analysis provide rapid and accurate diagnosis.
+                        </p>
+                    </div>
+
+                    <div class="fact-card">
+                        <div class="fact-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="fact-title" data-en="AI Accuracy" data-ar="دقة الذكاء الاصطناعي">AI Accuracy</h3>
+                        <p class="fact-text" data-en="Our AI models achieve over 99% accuracy in brain tumor classification, matching and sometimes exceeding human radiologist performance." data-ar="تحقق نماذجنا الذكية دقة تزيد عن 99% في تصنيف أورام الدماغ، مطابقة بل أحياناً متفوقة على أداء أطباء الأشعة.">
+                            Our AI models achieve over 99% accuracy in brain tumor classification, matching and sometimes exceeding human radiologist performance.
+                        </p>
+                    </div>
+
+                    <div class="fact-card">
+                        <div class="fact-icon">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <h3 class="fact-title" data-en="Global Impact" data-ar="التأثير العالمي">Global Impact</h3>
+                        <p class="fact-text" data-en="Brain tumors affect over 700,000 people worldwide annually. AI-powered diagnosis can help reduce diagnostic time from weeks to minutes." data-ar="تصيب أورام الدماغ أكثر من 700,000 شخص حول العالم سنوياً. التشخيص بالذكاء الاصطناعي يقلل وقت التشخيص من أسابيع إلى دقائق.">
+                            Brain tumors affect over 700,000 people worldwide annually. AI-powered diagnosis can help reduce diagnostic time from weeks to minutes.
+                        </p>
+                    </div>
+
+                    <div class="fact-card">
+                        <div class="fact-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="fact-title" data-en="Treatment Success" data-ar="نجاح العلاج">Treatment Success</h3>
+                        <p class="fact-text" data-en="When detected early, some brain tumors have survival rates exceeding 95%. AI assistance helps doctors make faster, more accurate treatment decisions." data-ar="عند اكتشافها مبكراً، تصل معدلات النجاة من بعض أورام الدماغ إلى أكثر من 95%. مساعدة الذكاء الاصطناعي تساعد الأطباء على اتخاذ قرارات علاجية أسرع وأدق.">
+                            When detected early, some brain tumors have survival rates exceeding 95%. AI assistance helps doctors make faster, more accurate treatment decisions.
+                        </p>
+                    </div>
+
+                    <div class="fact-card">
+                        <div class="fact-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 class="fact-title" data-en="Accessibility" data-ar="إمكانية الوصول">Accessibility</h3>
+                        <p class="fact-text" data-en="AI-powered diagnosis can bring expert-level medical analysis to remote areas and developing countries where specialist radiologists may not be available." data-ar="التشخيص بالذكاء الاصطناعي يوفر تحليلاً طبياً على مستوى الخبراء للمناطق النائية والدول النامية حيث قد لا يتوفر أطباء أشعة متخصصون.">
+                            AI-powered diagnosis can bring expert-level medical analysis to remote areas and developing countries where specialist radiologists may not be available.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <div id="toastMessage"></div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentLanguage = 'en';
+        let selectedModel = 'densenet121';
+        let currentImage = null;
+        let sampleImages = [];
+
+        // Mobile menu functionality
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('show');
+        }
+
+        function closeMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.remove('show');
+        }
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            
+            if (!mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                mobileMenu.classList.remove('show');
+            }
+        });
+
+        // Language toggle
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'en' ? 'ar' : 'en';
+            updateLanguage();
+            document.documentElement.dir = currentLanguage === 'ar' ? 'rtl' : 'ltr';
+            document.getElementById('lang-text').textContent = currentLanguage === 'en' ? 'عربي' : 'English';
+        }
+
+        function updateLanguage() {
+            const elements = document.querySelectorAll('[data-en][data-ar]');
+            elements.forEach(element => {
+                const text = element.getAttribute(`data-${currentLanguage}`);
+                if (text) {
+                    if (element.tagName === 'INPUT' && element.type === 'submit') {
+                        element.value = text;
+                    } else {
+                        element.textContent = text;
+                    }
+                }
+            });
+        }
+
+        // Smooth scrolling for navigation
+        function scrollToAnalyze() {
+            document.getElementById('analyze').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+        }
+
+        // Handle navigation clicks
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('nav-link') && e.target.getAttribute('href').startsWith('#')) {
+                e.preventDefault();
+                const targetId = e.target.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                }
+                closeMobileMenu();
+            }
+        });
+
+        // File handling
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                processFile(file);
+            }
+        }
+
+        function processFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showToast(currentLanguage === 'en' ? 'Please select a valid image file' : 'يرجى اختيار ملف صورة صحيح', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentImage = e.target.result;
+                showUploadedImage(e.target.result);
+                document.getElementById('analyzeBtn').disabled = false;
+                
+                // Clear any previous results
+                document.getElementById('resultsContent').classList.add('hidden');
+                document.getElementById('defaultMessage').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function showUploadedImage(imageSrc) {
+            const container = document.getElementById('uploadedImageContainer');
+            const img = document.getElementById('uploadedImage');
+            img.src = imageSrc;
+            container.style.display = 'block';
+        }
+
+        // Drag and drop
+        const uploadArea = document.getElementById('uploadArea');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        });
+
+        // Model selection
+        document.querySelectorAll('.model-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.model-option').forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                selectedModel = option.getAttribute('data-model');
+            });
+        });
+
+        // Image analysis
+        async function analyzeImage() {
+            if (!currentImage) {
+                showToast(currentLanguage === 'en' ? 'Please select an image first' : 'يرجى اختيار صورة أولاً', 'error');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loadingDiv').classList.add('show');
+            document.getElementById('resultsContent').classList.add('hidden');
+            document.getElementById('defaultMessage').style.display = 'none';
+            document.getElementById('analyzeBtn').disabled = true;
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        image: currentImage,
+                        model: selectedModel
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    displayResults(result);
+                    showToast(currentLanguage === 'en' ? 'Analysis completed successfully!' : 'تم التحليل بنجاح!', 'success');
+                } else {
+                    throw new Error(result.error || 'Analysis failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast((currentLanguage === 'en' ? 'Analysis failed: ' : 'فشل التحليل: ') + error.message, 'error');
+            } finally {
+                // Hide loading
+                document.getElementById('loadingDiv').classList.remove('show');
+                document.getElementById('analyzeBtn').disabled = false;
+            }
+        }
+
+        function displayResults(result) {
+            // Update prediction label
+            const predictionLabel = document.getElementById('predictionLabel');
+            const prediction = result.prediction;
+            
+            const labelTexts = {
+                'glioma': { en: 'Glioma Detected', ar: 'تم اكتشاف ورم دبقي' },
+                'meningioma': { en: 'Meningioma Detected', ar: 'تم اكتشاف ورم سحائي' },
+                'pituitary': { en: 'Pituitary Tumor Detected', ar: 'تم اكتشاف ورم نخامي' },
+                'notumor': { en: 'No Tumor Detected', ar: 'لم يتم اكتشاف ورم' }
+            };
+
+            predictionLabel.textContent = labelTexts[prediction]?.[currentLanguage] || labelTexts[prediction]?.en || prediction;
+            predictionLabel.className = `prediction-label ${prediction}`;
+
+            // Update confidence
+            document.getElementById('confidenceValue').textContent = result.confidence;
+
+            // Update model used
+            document.getElementById('modelUsed').textContent = result.model_used;
+
+            // Create probability bars
+            createProbabilityBars(result.all_probabilities);
+
+            // Show results
+            document.getElementById('resultsContent').classList.remove('hidden');
+        }
+
+        function createProbabilityBars(probabilities) {
+            const container = document.getElementById('probabilityBars');
+            container.innerHTML = '';
+
+            const classLabels = {
+                'glioma': { en: 'Glioma', ar: 'ورم دبقي' },
+                'meningioma': { en: 'Meningioma', ar: 'ورم سحائي' },
+                'pituitary': { en: 'Pituitary', ar: 'ورم نخامي' },
+                'notumor': { en: 'No Tumor', ar: 'لا ورم' }
+            };
+
+            const colors = {
+                'glioma': '#ff6b6b',
+                'meningioma': '#ffa726',
+                'pituitary': '#9c27b0',
+                'notumor': '#4caf50'
+            };
+
+            Object.entries(probabilities).forEach(([className, probability]) => {
+                const item = document.createElement('div');
+                item.className = 'probability-item';
+
+                const label = classLabels[className]?.[currentLanguage] || classLabels[className]?.en || className;
+                
+                item.innerHTML = `
+                    <span class="probability-label">${label}</span>
+                    <div class="probability-bar">
+                        <div class="probability-fill" style="width: ${probability}%; background: ${colors[className] || '#00d4ff'}"></div>
+                    </div>
+                    <span class="probability-value">${probability.toFixed(1)}%</span>
+                `;
+
+                container.appendChild(item);
+            });
+        }
+
+        // Sample images
+        async function loadSampleImages() {
+            try {
+                const response = await fetch('/samples');
+                const data = await response.json();
+                sampleImages = data.samples || [];
+                displaySampleImages();
+            } catch (error) {
+                console.error('Error loading sample images:', error);
+            }
+        }
+
+        function displaySampleImages() {
+            const grid = document.getElementById('samplesGrid');
+            grid.innerHTML = '';
+
+            // If no samples available, show placeholder
+            if (sampleImages.length === 0) {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'sample-item';
+                placeholder.innerHTML = `
+                    <div style="height: 80px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    <div class="sample-label">${currentLanguage === 'en' ? 'No samples available' : 'لا توجد صور متاحة'}</div>
+                `;
+                grid.appendChild(placeholder);
+                return;
+            }
+
+            sampleImages.forEach((filename, index) => {
+                const item = document.createElement('div');
+                item.className = 'sample-item';
+                
+                // Extract tumor type from filename
+                let label = `${currentLanguage === 'en' ? 'Sample' : 'نموذج'} ${index + 1}`;
+                const tumorLabels = {
+                    'glioma': { en: 'Glioma', ar: 'ورم دبقي' },
+                    'meningioma': { en: 'Meningioma', ar: 'ورم سحائي' },
+                    'pituitary': { en: 'Pituitary', ar: 'ورم نخامي' },
+                    'notumor': { en: 'Healthy Brain', ar: 'دماغ سليم' }
+                };
+                
+                // Check filename for tumor type
+                for (const [type, labels] of Object.entries(tumorLabels)) {
+                    if (filename.toLowerCase().includes(type)) {
+                        label = labels[currentLanguage];
+                        break;
+                    }
+                }
+                
+                item.innerHTML = `
+                    <img src="/static/samples/${filename}" alt="${label}" class="sample-image">
+                    <div class="sample-label">${label}</div>
+                `;
+                
+                item.addEventListener('click', () => {
+                    // Clear previous selection
+                    document.querySelectorAll('.sample-item').forEach(i => i.classList.remove('selected'));
+                    item.classList.add('selected');
+                    
+                    // Load this sample as current image
+                    fetch(`/static/samples/${filename}`)
+                        .then(response => response.blob())
+                        .then(blob => {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                currentImage = e.target.result;
+                                showUploadedImage(e.target.result);
+                                document.getElementById('analyzeBtn').disabled = false;
+                                
+                                // Clear any previous results
+                                document.getElementById('resultsContent').classList.add('hidden');
+                                document.getElementById('defaultMessage').style.display = 'block';
+                            };
+                            reader.readAsDataURL(blob);
+                        })
+                        .catch(error => {
+                            console.error('Error loading sample image:', error);
+                            showToast(currentLanguage === 'en' ? 'Error loading sample image' : 'خطأ في تحميل الصورة النموذجية', 'error');
+                        });
+                });
+                
+                grid.appendChild(item);
+            });
+        }
+
+        // Toast notifications
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSampleImages();
+            updateLanguage();
+        });
+    </script>
+</body>
+</html>
